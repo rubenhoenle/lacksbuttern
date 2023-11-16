@@ -1,0 +1,3 @@
+{{ range . }}
+{{ .Name }} hat {{ .Time }} {{if eq .Host "lachs-buttern.jetzt"}}seinen Lachs gebuttert{{else if eq .Host "lack-saufen.jetzt"}}Lack gesoffen{{end}}
+{{ end }}
