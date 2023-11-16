@@ -1,11 +1,37 @@
 {
-  description = "A very basic flake";
+  description = "Lachsbuttern wie ganz normale Lackaffen";
 
-  outputs = { self, nixpkgs }: {
-
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
+
+  outputs = { self, nixpkgs, treefmt-nix }:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; };
+      treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+      lacksbuttern = pkgs.buildGoModule {
+        pname = "lacksbuttern";
+        version = "1.0.0";
+        vendorHash = null;
+        src = ./.;
+      };
+    in
+    {
+
+      formatter.${system} = treefmtEval.config.build.wrapper;
+      checks.${system}.formatter = treefmtEval.config.build.check self;
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs;[
+          go
+        ];
+      };
+      packages.${system} = {
+        default = lacksbuttern;
+      };
+    };
 }
