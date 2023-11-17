@@ -17,7 +17,7 @@
       lacksbuttern = pkgs.buildGoModule {
         pname = "lacksbuttern";
         version = "1.0.0";
-        vendorHash = null;
+        vendorHash = "sha256-8wYERVt3PIsKkarkwPu8Zy/Sdx43P6g2lz2xRfvTZ2E=";
         src = ./.;
       };
     in

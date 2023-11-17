@@ -1,39 +1,47 @@
 package main
 
 import (
-	"os"
+	"fmt"
+	"net/http"
 	"text/template"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
-type Message struct {
-	Name   string
-	Host   string
-	Time   string
-	Intact bool
+func main() {
+	r := mux.NewRouter()
+	r.HandleFunc("/lazy", LazyHandler)
+	r.HandleFunc("/", RootHandler)
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         "127.0.0.1:8080",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+	srv.ListenAndServe()
 }
 
-func main() {
-	messages := []Message{
-		{
-			Name:   "Johannes",
-			Host:   "lachs-buttern.jetzt",
-			Time:   "in 10 Sekunden",
-			Intact: true,
-		},
-		{
-			Name:   "Ruben",
-			Host:   "lack-saufen.jetzt",
-			Time:   "vor 5 Minuten",
-			Intact: true,
-		},
-	}
-	var tmplFile = "messages.tmpl"
-	tmpl, err := template.New(tmplFile).ParseFiles(tmplFile)
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+	w.WriteHeader(http.StatusOK)
+	// fmt.Fprintf(w, "Category: %v\n", vars["category"])
+	var tmplFile = "rsc/index.html.tpl"
+	tmpl, err := template.New("index.html.tpl").ParseFiles(tmplFile)
 	if err != nil {
 		panic(err)
 	}
-	err = tmpl.Execute(os.Stdout, messages)
+	inputs := map[string]string{
+		"timestamp": time.Now().String(),
+	}
+	err = tmpl.Execute(w, inputs)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func LazyHandler(w http.ResponseWriter, r *http.Request) {
+	println("triggered lazy stuff")
+	fmt.Fprint(w, "<p>hello world</p>")
+    w.WriteHeader(http.StatusOK)
 }
