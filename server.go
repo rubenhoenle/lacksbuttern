@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"text/template"
@@ -16,6 +17,10 @@ const (
 	TypeCTX    = "server_type"
 )
 
+type test_struct struct {
+	Fname string `json:fname`
+}
+
 type Server struct {
 	ctx context.Context
 }
@@ -28,6 +33,7 @@ func (server *Server) Serve() {
 	r := mux.NewRouter()
 	r.HandleFunc("/lazy", server.LazyHandler)
 	r.HandleFunc("/", server.RootHandler)
+	r.HandleFunc("/add", server.AddHandler)
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         server.ctx.Value(AddressCTX).(string),
@@ -74,4 +80,28 @@ func (server *Server) RootHandler(w http.ResponseWriter, r *http.Request) {
 func (server *Server) LazyHandler(w http.ResponseWriter, r *http.Request) {
 	println("triggered lazy stuff")
 	fmt.Fprint(w, "<p>hello world</p>")
+}
+func (server *Server) AddHandler(w http.ResponseWriter, r *http.Request) {
+	println("add")
+	decoder := json.NewDecoder(r.Body)
+	var t test_struct
+	err := decoder.Decode(&t)
+	if err != nil {
+		panic(err)
+	}
+	println(t.Fname)
+	//fmt.Fprint(w, "<p>hello johannes</p>")
+
+	var tmplFile = "rsc/test.html.tpl"
+	tmpl, err := template.New("test.html.tpl").ParseFiles(tmplFile)
+	if err != nil {
+		panic(err)
+	}
+	inputs := map[string]string{
+		"name": t.Fname,
+	}
+	err = tmpl.Execute(w, inputs)
+	if err != nil {
+		panic(err)
+	}
 }
