@@ -17,7 +17,7 @@
       lacksbuttern = pkgs.buildGoModule {
         pname = "lacksbuttern";
         version = "1.0.0";
-        vendorHash = "sha256-8wYERVt3PIsKkarkwPu8Zy/Sdx43P6g2lz2xRfvTZ2E=";
+        vendorHash = "sha256-BH34/5aRJEpWzNPkMn1/in1iRDYTl/uEg97weXldpFs=";
         src = ./.;
       };
     in
@@ -32,6 +32,7 @@
       };
       packages.${system} = {
         default = lacksbuttern;
+        lack-dev = pkgs.writeScriptBin "lacksbuttern" ''${lacksbuttern}/bin/lacksbuttern -type lack -address 127.0.0.1:8080'';
       };
     };
 }
